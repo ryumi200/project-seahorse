@@ -1,4 +1,4 @@
-# ベースイメージを指定
+# ベースイメージとしてPythonを使用
 FROM python:3.9-slim
 
 # 作業ディレクトリを設定
@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # アプリケーションを実行
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["python", "app.py"]
