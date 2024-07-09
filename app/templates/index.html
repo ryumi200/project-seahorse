@@ -13,6 +13,8 @@
         <a href="{{ url_for('complete_task', id=task.id) }}" class="btn">
             {% if task.completed %}未完了にする{% else %}完了にする{% endif %}
         </a>
+        <a href="{{ url_for('delete_task', id=task.id) }}" class="btn btn-delete"
+            onclick="return confirm('本当にこのタスクを削除しますか？');">削除</a>
     </li>
     {% endfor %}
 </ul>

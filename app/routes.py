@@ -44,3 +44,11 @@ def complete_task(id):
 
     # タスク一覧ページにリダイレクト
     return redirect(url_for("index"))
+
+
+@app.route("/delete/<int:id>")
+def delete_task(id):
+    task = Task.query.get_or_404(id)
+    db.session.delete(task)
+    db.session.commit()
+    return redirect(url_for("index"))
