@@ -11,11 +11,11 @@ def index():
 
 
 @app.route("/add", methods=["GET", "POST"])
-def add_tasks():
+def add_task():
     if request.method == "POST":
         # フォームからデータを取得
         title = request.form["title"]
-        description = requst.form["description"]
+        description = request.form["description"]
 
         # 新しいタスクを作成
         new_task = Task(title=title, description=description)
@@ -31,7 +31,7 @@ def add_tasks():
     return render_template("add_task.html")
 
 
-@app.route("/complete/<ind:id>")
+@app.route("/complete/<int:id>")
 def complete_task(id):
     # 指定されたタスクのIDを取得
     task = Task.query.get_or_404(id)

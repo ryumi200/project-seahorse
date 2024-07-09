@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}タスク一覧{% endblock %}
+
+{% block content %}
+<h2>タスク一覧</h2>
+<ul class="task-list">
+    {% for task in tasks %}
+    <li class="task-item {% if task.completed %}completed{% endif %}">
+        <h3>{{ task.title }}</h3>
+        <p>{{ task.description }}</p>
+        <p>作成日時: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        <a href="{{ url_for('complete_task', id=task.id) }}" class="btn">
+            {% if task.completed %}未完了にする{% else %}完了にする{% endif %}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
