@@ -1,16 +1,22 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db
-from app.models import Task
+from app.models import User, Task
+from werkzeug.urls import url_parse
 
 
 @app.route("/")
+@login_required
 def index():
     # すべてのタスクを取得し、作成日時の降順で並び替え
-    tasks = Task.query.order_by(Task.created_at.desc()).all()
+    tasks = (
+        Task.query.filter_by(author=current_user).order_by(Task.created_at.desc()).all()
+    )
     return render_template("index.html", tasks=tasks)
 
 
 @app.route("/add", methods=["GET", "POST"])
+@login_required
 def add_task():
     if request.method == "POST":
         # フォームからデータを取得
@@ -18,11 +24,12 @@ def add_task():
         description = request.form["description"]
 
         # 新しいタスクを作成
-        new_task = Task(title=title, description=description)
+        new_task = Task(title=title, description=description, author=current_user)
 
         # データベースに追加して保存
         db.session.add(new_task)
         db.session.commit()
+        flash("タスクが追加されました!")
 
         # タスク一覧ベージにリダイレクト
         return redirect(url_for("index"))
@@ -32,9 +39,13 @@ def add_task():
 
 
 @app.route("/complete/<int:id>")
+@login_required
 def complete_task(id):
     # 指定されたタスクのIDを取得
     task = Task.query.get_or_404(id)
+    if task.author != current_user:
+        flash("このタスクを編集する権限がありません。")
+        return redirect(url_for("index"))
 
     # タスクの完了状態を切り替え
     task.completed = not task.completed
@@ -47,8 +58,50 @@ def complete_task(id):
 
 
 @app.route("/delete/<int:id>")
+@login_required
 def delete_task(id):
     task = Task.query.get_or_404(id)
+    if task.author != current_user:
+        flash("このタスクを削除する権限がありません。")
+        return redirect(url_for("index"))
     db.session.delete(task)
     db.session.commit()
+    flash("タスクが削除されました。")
     return redirect(url_for("index"))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    if request.method == "POST":
+        user = User.query.filter_by(username=request.form["username"]).first()
+        if user is None or not user.check_password(request.form["password"]):
+            flash("無効なユーザー名またはパスワードです")
+            return redirect(url_for("login"))
+        login_user(user)
+        next_page = request.args.get("next")
+        if not next_page or url_parse(next_page).netloc != "":
+            next_page = url_for("index")
+        return redirect(next_page)
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for("index"))
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+    if request.method == "POST":
+        user = User(username=request.form["username"], email=request.form["email"])
+        user.set_password(request.form["password"])
+        db.session.add(user)
+        db.session.commit()
+        flash("登録が完了しました!")
+        return redirect(url_for("login"))
+    return render_template("register.html")

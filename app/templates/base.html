@@ -13,12 +13,27 @@
         <h1>Seahorse</h1>
         <nav>
             <ul>
+                {% if current_user.is_authenticated %}
                 <li><a href="{{ url_for('index') }}">タスク一覧</a></li>
                 <li><a href="{{ url_for('add_task') }}">新規タスク追加</a></li>
+                <li><a href="{{ url_for('logout') }}">ログアウト</a></li>
+                {% else %}
+                <li><a href="{{ url_for('login') }}">ログイン</a></li>
+                <li><a href="{{ url_for('register') }}">登録</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
     <main>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul class="flashes">
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
     <footer>
