@@ -3,26 +3,32 @@ from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.models import User, Task
 from werkzeug.urls import url_parse
-from sqlalchemy import case
 
 
 @app.route("/")
 @login_required
 def index():
-    tasks = (
-        Task.query.filter_by(author=current_user)
-        .order_by(
-            case(
-                (Task.completed == False, 1),
-                (Task.completed == True, 2),
-                (Task.is_deleted == True, 3),
-                else_=4,
-            ),
-            Task.created_at.desc(),
-        )
+    incomplete_tasks = (
+        Task.query.filter_by(user_id=current_user.id, completed=False, is_deleted=False)
+        .order_by(Task.created_at.desc())
         .all()
     )
-    return render_template("index.html", tasks=tasks)
+    completed_tasks = (
+        Task.query.filter_by(user_id=current_user.id, completed=True, is_deleted=False)
+        .order_by(Task.created_at.desc())
+        .all()
+    )
+    deleted_tasks = (
+        Task.query.filter_by(user_id=current_user.id, is_deleted=True)
+        .order_by(Task.created_at.desc())
+        .all()
+    )
+    return render_template(
+        "index.html",
+        incomplete_tasks=incomplete_tasks,
+        completed_tasks=completed_tasks,
+        deleted_tasks=deleted_tasks,
+    )
 
 
 @app.route("/add", methods=["GET", "POST"])

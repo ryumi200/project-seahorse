@@ -4,17 +4,33 @@
 
 {% block content %}
 <h2>タスク一覧</h2>
+
+<h3>未完了のタスク</h3>
 <ul class="task-list">
-    {% for task in tasks %}
-    <li class="task-item {% if task.completed %}completed{% endif %}">
-        <h3>{{ task.title }}</h3>
-        <p>{{ task.description }}</p>
-        <p>作成日時: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-        <a href="{{ url_for('complete_task', id=task.id) }}" class="btn">
-            {% if task.completed %}未完了にする{% else %}完了にする{% endif %}
-        </a>
-        <a href="{{ url_for('delete_task', id=task.id) }}" class="btn btn-delete"
-            onclick="return confirm('本当にこのタスクを削除しますか？');">削除</a>
+    {% for task in incomplete_tasks %}
+    <li class="task-item">
+        <span class="task-title">{{ task.title }}</span>
+        <a href="{{ url_for('complete_task', id=task.id)}}" class="btn">完了</a>
+        <a href="{{ url_for('delete_task', id=task.id)}}" class="btn btn-delete">削除</a>
+    </li>
+    {% endfor %}
+</ul>
+<h3>完了したタスク</h3>
+<ul class="task-list">
+    {% for task in completed_tasks %}
+    <li class="task-item">
+        <span class="task-title">{{ task.title }}</span>
+        <a href="{{ url_for('complete_task', id=task.id)}}" class="btn">未完了にする</a>
+        <a href="{{ url_for('delete_task', id=task.id)}}" class="btn btn-delete">削除</a>
+    </li>
+    {% endfor %}
+</ul>
+<h3>削除したタスク</h3>
+<ul class="task-list">
+    {% for task in deleted_tasks %}
+    <li class="task-item">
+        <span class="task-title">{{ task.title }}</span>
+        <a href="{{ url_for('restore_task', id=task.id)}}" class="btn">未完了のタスクへ戻す</a>
     </li>
     {% endfor %}
 </ul>
