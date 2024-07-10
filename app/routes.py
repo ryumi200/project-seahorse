@@ -10,7 +10,9 @@ from werkzeug.urls import url_parse
 def index():
     # すべてのタスクを取得し、作成日時の降順で並び替え
     tasks = (
-        Task.query.filter_by(author=current_user).order_by(Task.created_at.desc()).all()
+        Task.query.filter_by(author=current_user, is_deleted=False)
+        .order_by(Task.created_at.desc())
+        .all()
     )
     return render_template("index.html", tasks=tasks)
 
@@ -64,7 +66,7 @@ def delete_task(id):
     if task.author != current_user:
         flash("このタスクを削除する権限がありません。")
         return redirect(url_for("index"))
-    db.session.delete(task)
+    task.is_deleted = True
     db.session.commit()
     flash("タスクが削除されました。")
     return redirect(url_for("index"))
@@ -105,3 +107,27 @@ def register():
         flash("登録が完了しました!")
         return redirect(url_for("login"))
     return render_template("register.html")
+
+
+@app.route("/deleted_tasks")
+@login_required
+def deleted_tasks():
+    tasks = (
+        Task.query.filter_by(author=current_user, is_deleted=True)
+        .order_by(Task.created_at.desc())
+        .all()
+    )
+    return render_template("deleted_tasks.html", tasks=tasks)
+
+
+@app.route("/restore/<int:id>")
+@login_required
+def restore_task(id):
+    task = Task.query.get_or_404(id)
+    if task.author != current_user:
+        flash("このタスクを復元する権限がありません。")
+        return redirect(url_for("deleted_tasks"))
+    task.is_deleted = False
+    db.session.commit()
+    flash("タスクが追加されました。")
+    return redirect(url_for("deleted_tasks"))
