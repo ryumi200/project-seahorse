@@ -9,17 +9,19 @@ from werkzeug.urls import url_parse
 @login_required
 def index():
     incomplete_tasks = (
-        Task.query.filter_by(user_id=current_user.id, completed=False, is_deleted=False)
+        Task.query.filter_by(
+            user_id=current_user.id, completed=False, is_archived=False
+        )
         .order_by(Task.created_at.desc())
         .all()
     )
     completed_tasks = (
-        Task.query.filter_by(user_id=current_user.id, completed=True, is_deleted=False)
+        Task.query.filter_by(user_id=current_user.id, completed=True, is_archived=False)
         .order_by(Task.created_at.desc())
         .all()
     )
-    deleted_tasks = (
-        Task.query.filter_by(user_id=current_user.id, is_deleted=True)
+    archived_tasks = (
+        Task.query.filter_by(user_id=current_user.id, is_archived=True)
         .order_by(Task.created_at.desc())
         .all()
     )
@@ -27,7 +29,7 @@ def index():
         "index.html",
         incomplete_tasks=incomplete_tasks,
         completed_tasks=completed_tasks,
-        deleted_tasks=deleted_tasks,
+        archived_tasks=archived_tasks,
     )
 
 
@@ -73,14 +75,14 @@ def complete_task(id):
     return redirect(url_for("index"))
 
 
-@app.route("/delete/<int:id>")
+@app.route("/archive/<int:id>")
 @login_required
-def delete_task(id):
+def archive_task(id):
     task = Task.query.get_or_404(id)
     if task.author != current_user:
         flash("このタスクを削除する権限がありません。")
         return redirect(url_for("index"))
-    task.is_deleted = True
+    task.is_archived = True
     db.session.commit()
     flash("タスクが削除されました。")
     return redirect(url_for("index"))
@@ -123,15 +125,15 @@ def register():
     return render_template("register.html")
 
 
-@app.route("/deleted_tasks")
+@app.route("/archived_tasks")
 @login_required
-def deleted_tasks():
+def archived_tasks():
     tasks = (
-        Task.query.filter_by(author=current_user, is_deleted=True)
+        Task.query.filter_by(author=current_user, is_archived=True)
         .order_by(Task.created_at.desc())
         .all()
     )
-    return render_template("deleted_tasks.html", tasks=tasks)
+    return render_template("archived_tasks.html", tasks=tasks)
 
 
 @app.route("/restore/<int:id>")
@@ -140,8 +142,8 @@ def restore_task(id):
     task = Task.query.get_or_404(id)
     if task.author != current_user:
         flash("このタスクを復元する権限がありません。")
-        return redirect(url_for("deleted_tasks"))
-    task.is_deleted = False
+        return redirect(url_for("archived_tasks"))
+    task.is_archived = False
     db.session.commit()
     flash("タスクが追加されました。")
-    return redirect(url_for("deleted_tasks"))
+    return redirect(url_for("archived_tasks"))

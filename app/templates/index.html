@@ -11,7 +11,7 @@
     <li class="task-item">
         <span class="task-title">{{ task.title }}</span>
         <a href="{{ url_for('complete_task', id=task.id)}}" class="btn">完了</a>
-        <a href="{{ url_for('delete_task', id=task.id)}}" class="btn btn-delete">削除</a>
+        <a href="{{ url_for('archive_task', id=task.id)}}" class="btn btn-archive">アーカイブ</a>
     </li>
     {% endfor %}
 </ul>
@@ -21,16 +21,16 @@
     <li class="task-item">
         <span class="task-title">{{ task.title }}</span>
         <a href="{{ url_for('complete_task', id=task.id)}}" class="btn">未完了にする</a>
-        <a href="{{ url_for('delete_task', id=task.id)}}" class="btn btn-delete">削除</a>
+        <a href="{{ url_for('archive_task', id=task.id)}}" class="btn btn-archive">アーカイブ</a>
     </li>
     {% endfor %}
 </ul>
-<h3>削除したタスク</h3>
+<h3>アーカイブしたタスク</h3>
 <ul class="task-list">
-    {% for task in deleted_tasks %}
+    {% for task in archived_tasks %}
     <li class="task-item">
         <span class="task-title">{{ task.title }}</span>
-        <a href="{{ url_for('restore_task', id=task.id)}}" class="btn">未完了のタスクへ戻す</a>
+        <a href="{{ url_for('restore_task', id=task.id)}}" class="btn">タスクへ戻す</a>
     </li>
     {% endfor %}
 </ul>

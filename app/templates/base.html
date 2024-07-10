@@ -16,7 +16,7 @@
                 {% if current_user.is_authenticated %}
                 <li><a href="{{ url_for('index') }}">タスク一覧</a></li>
                 <li><a href="{{ url_for('add_task') }}">新規タスク追加</a></li>
-                <li><a href="{{ url_for('deleted_tasks') }}">削除したタスク</a></li>
+                <li><a href="{{ url_for('archived_tasks') }}">削除したタスク</a></li>
                 <li><a href="{{ url_for('logout') }}">ログアウト</a></li>
                 {% else %}
                 <li><a href="{{ url_for('login') }}">ログイン</a></li>

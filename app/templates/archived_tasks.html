@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>削除したタスク一覧</h2>
+<h2>アーカイブタスク一覧</h2>
 <ul class="task-list">
     {% for task in tasks %}
     <li class="task-item">
         <h3>{{ task.title }}</h3>
         <p>{{ task.description }}</p>
         <p>作成日時: {{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-        <a href="{{ url_for('restore_task', id=task.id) }}" class="btn">タスクを表示</a>
+        <a href="{{ url_for('restore_task', id=task.id) }}" class="btn">タスクを戻す</a>
     </li>
     {% else %}
-    <li>削除されたタスクはありません。</li>
+    <li>アーカイブされたタスクはありません。</li>
     {% endfor %}
 </ul>
 {% endblock %}

@@ -82,11 +82,11 @@ footer {
     color: #fff;
 }
 
-.btn-delete {
+.btn-archive {
     background-color: #ff4136;
     margin-left: 10px;
 }
 
-.btn-delete:hover {
+.btn-archive:hover {
     background-color: #ff7066;
 }
