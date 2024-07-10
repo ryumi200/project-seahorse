@@ -3,15 +3,23 @@ from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.models import User, Task
 from werkzeug.urls import url_parse
+from sqlalchemy import case
 
 
 @app.route("/")
 @login_required
 def index():
-    # すべてのタスクを取得し、作成日時の降順で並び替え
     tasks = (
-        Task.query.filter_by(author=current_user, is_deleted=False)
-        .order_by(Task.created_at.desc())
+        Task.query.filter_by(author=current_user)
+        .order_by(
+            case(
+                (Task.completed == False, 1),
+                (Task.completed == True, 2),
+                (Task.is_deleted == True, 3),
+                else_=4,
+            ),
+            Task.created_at.desc(),
+        )
         .all()
     )
     return render_template("index.html", tasks=tasks)
