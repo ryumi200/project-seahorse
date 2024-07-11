@@ -201,4 +201,10 @@ def edit_task(id):
         form.title.data = task.title
         form.description.data = task.description
     return render_template("edit_task.html", task=task, form=form)
+
+@app.route('/task_detail/<int:id>')
+@login_required
+def task_detail(id):
+    task = Task.query.get_or_404(id)
+    return render_template('task_detail.html', task=task)
     
