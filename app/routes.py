@@ -178,3 +178,24 @@ def delete_task(id):
     db.session.commit()
     flash("タスクを削除しました。")
     return redirect(url_for("index"))
+
+
+@app.route("/edit/<int:id>", methods=["GET", "POST"])
+@login_required
+def edit_task(id):
+    task = Task.query.get_or_404(id)
+    if task.author != current_user:
+        flash("このタスクを編集する権限がありません。")
+        return redirect(url_for("index"))
+
+    form = TaskForm()
+    if form.validate_on_submit():
+        task.title = form.title.data
+        task.description = form.description.data
+        db.session.commit()
+        flash("タスクの内容が変更されました!")
+        return redirect(url_for("index"))
+    elif request.method == "GET":
+        form.title.data = task.title
+        form.description.data = task.description
+    return render_template("edit_task.html", task=task, form=form)
