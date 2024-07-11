@@ -2,19 +2,36 @@
 
 {% block content %}
 <h1>ユーザー登録</h1>
-<form action="" method="post">
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
     <div>
-        <label for="username">ユーザー名:</label>
-        <input type="text" id="username" name="username" required>
+        {{ form.username.label }}
+        {{ form.username(required=true) }}
+        {% for error in form.username.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
     </div>
     <div>
-        <label for="email">メールアドレス:</label>
-        <input type="email" id="email" name="email" required>
+        {{ form.email.label }}
+        {{ form.email(required=true) }}
+        {% for error in form.email.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
     </div>
     <div>
-        <label for="password">パスワード:</label>
-        <input type="password" id="password" name="password" required>
+        {{ form.password.label }}
+        {{ form.password(required=true) }}
+        {% for error in form.password.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
     </div>
-    <button type="submit">登録</button>
+    <div>
+        {{ form.password2.label }}
+        {{ form.password2(required=true) }}
+        {% for error in form.password2.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
+    </div>
+    {{ form.submit() }}
 </form>
 {% endblock %}

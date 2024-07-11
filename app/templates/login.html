@@ -3,15 +3,22 @@
 {% block content %}
 <h1>ログイン</h1>
 <form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
     <div>
-        <label for="username">ユーザー名:</label>
-        <input type="text" id="username" name="username" required>
+        {{ form.username.label }}
+        {{ form.username(required=true) }}
+        {% for error in form.username.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
     </div>
     <div>
-        <label for="password">パスワード</label>
-        <input type="password" id="password" name="password" required>
+        {{ form.password.label }}
+        {{ form.password(required=true) }}
+        {% for error in form.password.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
     </div>
-    <button type="submit">ログイン</button>
+    {{ form.submit() }}
 </form>
 <p>新規ユーザーですか？<a href="{{ url_for('register') }}">登録する</a></p>
 {% endblock %}

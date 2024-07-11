@@ -1,8 +1,33 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.models import User, Task
 from werkzeug.urls import url_parse
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo
+
+
+class LoginForm(FlaskForm):
+    username = StringField("ユーザー名", validators=[DataRequired()])
+    password = PasswordField("パスワード", validators=[DataRequired()])
+    submit = SubmitField("ログイン")
+
+
+class RegistrationForm(FlaskForm):
+    username = StringField("ユーザー名", validators=[DataRequired()])
+    email = StringField("メールアドレス", validators=[DataRequired(), Email()])
+    password = PasswordField("パスワード", validators=[DataRequired()])
+    password2 = PasswordField(
+        "パスワード（確認）", validators=[DataRequired(), EqualTo("password")]
+    )
+    submit = SubmitField("登録")
+
+
+class TaskForm(FlaskForm):
+    title = StringField("タイトル", validators=[DataRequired()])
+    description = TextAreaField("説明")
+    submit = SubmitField("タスクを追加")
 
 
 @app.route("/")
@@ -36,42 +61,29 @@ def index():
 @app.route("/add", methods=["GET", "POST"])
 @login_required
 def add_task():
-    if request.method == "POST":
-        # フォームからデータを取得
-        title = request.form["title"]
-        description = request.form["description"]
-
-        # 新しいタスクを作成
-        new_task = Task(title=title, description=description, author=current_user)
-
-        # データベースに追加して保存
+    form = TaskForm()
+    if form.validate_on_submit():
+        new_task = Task(
+            title=form.title.data,
+            description=form.description.data,
+            author=current_user,
+        )
         db.session.add(new_task)
         db.session.commit()
         flash("タスクが追加されました!")
-
-        # タスク一覧ベージにリダイレクト
         return redirect(url_for("index"))
-
-    # GETリクエストの場合、タスク追加フォームを表示
-    return render_template("add_task.html")
+    return render_template("add_task.html", form=form)
 
 
 @app.route("/complete/<int:id>")
 @login_required
 def complete_task(id):
-    # 指定されたタスクのIDを取得
     task = Task.query.get_or_404(id)
     if task.author != current_user:
         flash("このタスクを編集する権限がありません。")
         return redirect(url_for("index"))
-
-    # タスクの完了状態を切り替え
     task.completed = not task.completed
-
-    # 変更を保存
     db.session.commit()
-
-    # タスク一覧ページにリダイレクト
     return redirect(url_for("index"))
 
 
@@ -80,11 +92,11 @@ def complete_task(id):
 def archive_task(id):
     task = Task.query.get_or_404(id)
     if task.author != current_user:
-        flash("このタスクを削除する権限がありません。")
+        flash("このタスクをアーカイブする権限がありません。")
         return redirect(url_for("index"))
     task.is_archived = True
     db.session.commit()
-    flash("タスクが削除されました。")
+    flash("タスクがアーカイブされました。")
     return redirect(url_for("index"))
 
 
@@ -92,9 +104,10 @@ def archive_task(id):
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
-    if request.method == "POST":
-        user = User.query.filter_by(username=request.form["username"]).first()
-        if user is None or not user.check_password(request.form["password"]):
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
             flash("無効なユーザー名またはパスワードです")
             return redirect(url_for("login"))
         login_user(user)
@@ -102,7 +115,7 @@ def login():
         if not next_page or url_parse(next_page).netloc != "":
             next_page = url_for("index")
         return redirect(next_page)
-    return render_template("login.html")
+    return render_template("login.html", form=form)
 
 
 @app.route("/logout")
@@ -115,14 +128,15 @@ def logout():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
-    if request.method == "POST":
-        user = User(username=request.form["username"], email=request.form["email"])
-        user.set_password(request.form["password"])
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
         flash("登録が完了しました!")
         return redirect(url_for("login"))
-    return render_template("register.html")
+    return render_template("register.html", form=form)
 
 
 @app.route("/archived_tasks")
@@ -145,5 +159,18 @@ def restore_task(id):
         return redirect(url_for("archived_tasks"))
     task.is_archived = False
     db.session.commit()
-    flash("タスクが追加されました。")
+    flash("タスクが復元されました。")
     return redirect(url_for("archived_tasks"))
+
+
+@app.route("/delete/<int:id>", methods=["POST"])
+@login_required
+def delete_task(id):
+    task = Task.query.get_or_404(id)
+    if task.author != current_user:
+        flash("このタスクを削除する権限がありません。")
+        return redirect(url_for("index"))
+    db.session.delete(task)
+    db.session.commit()
+    flash("タスクを削除しました。")
+    return redirect(url_for("index"))

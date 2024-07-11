@@ -10,11 +10,16 @@
     {% for task in incomplete_tasks %}
     <li class="task-item">
         <span class="task-title">{{ task.title }}</span>
-        <a href="{{ url_for('complete_task', id=task.id)}}" class="btn">完了</a>
-        <a href="{{ url_for('archive_task', id=task.id)}}" class="btn btn-archive">アーカイブ</a>
+        <a href="{{ url_for('complete_task', id=task.id )}}" class="btn">完了</a>
+        <a href="{{ url_for('archive_task', id=task.id )}}" class="btn btn-archive">アーカイブ</a>
+        <form action="{{ url_for('delete_task', id=task.id )}}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-delete">削除</button>
+        </form>
     </li>
     {% endfor %}
 </ul>
+
 <h3>完了したタスク</h3>
 <ul class="task-list">
     {% for task in completed_tasks %}
@@ -22,15 +27,24 @@
         <span class="task-title">{{ task.title }}</span>
         <a href="{{ url_for('complete_task', id=task.id)}}" class="btn">未完了にする</a>
         <a href="{{ url_for('archive_task', id=task.id)}}" class="btn btn-archive">アーカイブ</a>
+        <form action="{{ url_for('delete_task', id=task.id )}}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-delete">削除</button>
+        </form>
     </li>
     {% endfor %}
 </ul>
+
 <h3>アーカイブしたタスク</h3>
 <ul class="task-list">
     {% for task in archived_tasks %}
     <li class="task-item">
         <span class="task-title">{{ task.title }}</span>
         <a href="{{ url_for('restore_task', id=task.id)}}" class="btn">タスクへ戻す</a>
+        <form action="{{ url_for('delete_task', id=task.id )}}" method="post" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-delete">削除</button>
+        </form>
     </li>
     {% endfor %}
 </ul>

@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFProtect
 
 # .envから環境変数を読み込む
 load_dotenv()
@@ -14,6 +15,9 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or "fallback-secret-key"
 # データベース設定
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///task.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# CSRF保護を有効にする
+csrf = CSRFProtect(app)
 
 # SQLAlchemyインスタンスを作成
 db = SQLAlchemy(app)

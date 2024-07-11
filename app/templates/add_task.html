@@ -5,14 +5,21 @@
 {% block content %}
 <h2>新規タスク追加</h2>
 <form action="{{ url_for('add_task') }}" method="post" class="task-form">
+    {{ form.hidden_tag() }}
     <div>
-        <label for="title">タイトル:</label>
-        <input type="text" id="title" name="title" required>
+        {{ form.title.label }}
+        {{ form.title(required=true) }}
+        {% for error in form.title.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
     </div>
     <div>
-        <label for="description">説明:</label>
-        <textarea id="description" name="description"></textarea>
+        {{ form.description.label }}
+        {{ form.description() }}
+        {% for error in form.description.errors %}
+        <span class="error">{{ error }}</span>
+        {% endfor %}
     </div>
-    <button type="submit" class="btn">タスクを追加</button>
+    {{ form.submit(class="btn") }}
 </form>
 {% endblock %}
