@@ -160,7 +160,11 @@ def restore_task(id):
     task.is_archived = False
     db.session.commit()
     flash("タスクが復元されました。")
-    return redirect(url_for("archived_tasks"))
+    referer = request.headers.get("Referer")
+    if referer:
+        return redirect(referer)
+    else:
+        return redirect(url_for(index))
 
 
 @app.route("/delete/<int:id>", methods=["POST"])
