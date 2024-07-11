@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.models import User, Task
@@ -41,7 +41,9 @@ def index():
         .all()
     )
     completed_tasks = (
-        Task.query.filter_by(user_id=current_user.id, completed=True, is_archived=False)
+        Task.query.filter_by(
+            user_id=current_user.id, completed=True, is_archived=False
+        )
         .order_by(Task.created_at.desc())
         .all()
     )
@@ -199,3 +201,4 @@ def edit_task(id):
         form.title.data = task.title
         form.description.data = task.description
     return render_template("edit_task.html", task=task, form=form)
+    
